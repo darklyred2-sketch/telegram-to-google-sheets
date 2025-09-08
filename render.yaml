@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: telegram-to-sheets
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: APPS_SCRIPT_URL
+        sync: false
