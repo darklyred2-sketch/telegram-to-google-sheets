@@ -123,7 +123,7 @@ def telegram_webhook():
             app.logger.info("👤 Личный чат — обрабатываем сообщение")
 
         elif chat_type in ['group', 'supergroup']:
-            bot_username = "@MyResumeBot"  # 🔥 ЗАМЕНИ НА ИМЯ СВОЕГО БОТА
+            bot_username = "@Outstaff_connect_bot"  # 🔥 ЗАМЕНИ НА ИМЯ СВОЕГО БОТА
             entities = message.get('entities', []) + message.get('caption_entities', [])
 
             for entity in entities:
