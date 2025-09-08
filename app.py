@@ -1,35 +1,20 @@
-from flask import Flask, request, jsonify
-import requests
-import os
-import base64
-import logging
-
-app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
-
-# Получаем токен и URL из переменных окружения
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
-
-# ➡️ Обработчик для проверки здоровья сервиса
-@app.route('/', methods=['GET'])
-def health_check():
-    return "OK", 200
-
-# ➡️ Обработчик вебхука от Telegram
 @app.route('/webhook', methods=['POST'])
 def telegram_webhook():
-    update = request.get_json()
-    
-    chat_id = None
-    text = ""
-    file_data = None
-
-    if 'message' in update:
-        message = update['message']
-        chat_id = message['chat']['id']
+    try:
+        update = request.get_json()
         
-        # Получаем текст из 'text' или 'caption'
+        if 'message' not in update:
+            app.logger.warning("⚠️ Нет ключа 'message' в update")
+            return jsonify({"status": "no_message"}), 200
+
+        message = update['message']
+        chat_id = message.get('chat', {}).get('id')
+        if not chat_id:
+            app.logger.warning("⚠️ Нет chat_id")
+            return jsonify({"status": "no_chat_id"}), 200
+
+        # Получаем текст
+        text = ""
         if 'text' in message:
             text = message['text']
         elif 'caption' in message:
@@ -37,97 +22,88 @@ def telegram_webhook():
             app.logger.info(f"📎 Использую caption: {text}")
         else:
             app.logger.warning("⚠️ Ни text, ни caption не найдены")
-            return jsonify({"status": "no_text"})
+            return jsonify({"status": "no_text"}), 200  # 👈 БЫЛО: не было return!
 
         app.logger.info(f"📩 Получен текст: {repr(text)}")
 
-        # 🆕 Проверяем, нужно ли боту реагировать
+        # Проверяем, нужно ли отвечать
         should_respond = False
 
-        # Сценарий 1: личный чат — всегда отвечаем
         if message['chat']['type'] == 'private':
             should_respond = True
-            app.logger.info("👤 Личный чат — обрабатываем сообщение")
+            app.logger.info("👤 Личный чат — обрабатываем")
 
-        # Сценарий 2: группа — проверяем упоминание бота
         elif message['chat']['type'] in ['group', 'supergroup']:
-            bot_username = "@Outstaff_connect_bot"  # 🔥 ЗАМЕНИ НА СВОЁ ИМЯ БОТА, например @HR_Bot
+            bot_username = "@Outstaff_connect_bot"  # 🔥 ЗАМЕНИ НА СВОЁ ИМЯ БОТА
             entities = message.get('entities', []) + message.get('caption_entities', [])
 
             for entity in entities:
-                if entity['type'] == 'mention':
-                    mention = text[entity['offset']:entity['offset'] + entity['length']]
-                    if mention.lower() == bot_username.lower():
-                        should_respond = True
-                        # Удаляем упоминание из текста, чтобы не мешало парсингу
-                        text = text.replace(mention, "").strip()
-                        app.logger.info(f"📢 Бот упомянут в группе — обрабатываем: {text}")
-                        break
+                if entity.get('type') == 'mention' and 'offset' in entity and 'length' in entity:
+                    try:
+                        mention = text[entity['offset']:entity['offset'] + entity['length']]
+                        if mention.lower() == bot_username.lower():
+                            should_respond = True
+                            text = text.replace(mention, "").strip()
+                            app.logger.info(f"📢 Бот упомянут: {text}")
+                            break
+                    except Exception as e:
+                        app.logger.warning(f"⚠️ Ошибка при извлечении mention: {e}")
+                        continue
 
         if not should_respond:
-            app.logger.info("🔕 Бот не упомянут — игнорируем сообщение")
-            return jsonify({"status": "ignored"})
+            app.logger.info("🔕 Игнорируем — бот не упомянут")
+            return jsonify({"status": "ignored"}), 200  # 👈 БЫЛО: возможно, не было return
 
-        # ... остальной код (парсинг, файлы, отправка в Google Apps Script) ...
+        # Обработка файла (если есть)
+        file_data = None
+        if 'document' in message:
+            try:
+                file_id = message['document']['file_id']
+                file_name = message['document'].get('file_name', 'unknown_file')
+                mime_type = message['document'].get('mime_type', 'application/octet-stream')
+                
+                file_path = get_telegram_file_path(file_id)
+                if file_path:
+                    file_content = download_file(file_path)
+                    if file_content:
+                        file_base64 = base64.b64encode(file_content).decode('utf-8')
+                        file_data = {
+                            "name": file_name,
+                            "base64": file_base64,
+                            "mimeType": mime_type
+                        }
+                        app.logger.info(f"📄 Файл получен: {file_name}")
+            except Exception as e:
+                app.logger.error(f"❌ Ошибка обработки файла: {str(e)}")
 
-# 🔗 Получает путь к файлу от Telegram API
-def get_telegram_file_path(file_id):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getFile?file_id={file_id}"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            result = response.json()
-            if result.get('ok'):
-                return result['result']['file_path']
+        # Парсим текст
+        parsed_data = parse_message(text) if text else {}
+        if not parsed_data:
+            send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Формат:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
+            return jsonify({"status": "parse_failed"}), 200
+
+        # Отправляем в Google Apps Script
+        payload = {
+            "data": parsed_data,
+            "file": file_data
+        }
+
+        try:
+            response = requests.post(APPS_SCRIPT_URL, json=payload, timeout=30)
+            if response.status_code == 200:
+                send_telegram_message(chat_id, "✅ Данные и файл добавлены в таблицу!")
+                app.logger.info(f"📤 Успешно отправлено: {parsed_data}, файл: {'да' if file_data else 'нет'}")
+            else:
+                error_msg = f"❌ Ошибка сервера таблицы: {response.status_code}"
+                send_telegram_message(chat_id, error_msg)
+                app.logger.error(error_msg)
+        except Exception as e:
+            error_msg = "❌ Не удалось отправить данные."
+            send_telegram_message(chat_id, error_msg)
+            app.logger.error(f"❌ Исключение при отправке: {str(e)}")
+
+        return jsonify({"status": "ok"}), 200  # 👈 ГАРАНТИРОВАННЫЙ RETURN В КОНЦЕ
+
     except Exception as e:
-        app.logger.error(f"❌ Ошибка получения пути файла: {str(e)}")
-    return None
-
-# 📥 Скачивает файл с серверов Telegram
-def download_file(file_path):
-    file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_path}"
-    try:
-        response = requests.get(file_url, timeout=30)
-        if response.status_code == 200:
-            return response.content
-    except Exception as e:
-        app.logger.error(f"❌ Ошибка скачивания файла: {str(e)}")
-    return None
-
-# 🔍 Парсит текст сообщения вида "Ключ: Значение"
-def parse_message(text):
-    try:
-        lines = text.strip().split('\n')  # Убираем лишние переносы по краям
-        parsed = {}
-        for line in lines:
-            line = line.strip()  # Убираем пробелы в начале/конце строки
-            if ':' in line:
-                key, value = line.split(':', 1)  # Делим только по первому двоеточию
-                parsed[key.strip()] = value.strip()
-        
-        # Проверяем наличие всех обязательных полей
-        required = ['Позиция', 'Команда', 'Соискатель', 'Компания']
-        if all(key in parsed for key in required):
-            return parsed
-        else:
-            app.logger.warning(f"❌ Не хватает полей. Распарсено: {parsed}")
-            return None
-    except Exception as e:
-        app.logger.error(f"❌ Ошибка парсинга: {str(e)}")
-        return None
-
-# 📨 Отправляет сообщение обратно в Telegram
-def send_telegram_message(chat_id, text):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
-        'chat_id': chat_id,
-        'text': text
-    }
-    try:
-        requests.post(url, json=payload, timeout=5)
-    except Exception as e:
-        app.logger.error(f"❌ Не удалось отправить сообщение в Telegram: {str(e)}")
-
-# 🚀 Запуск сервера
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+        app.logger.error(f"💥 Необработанная ошибка: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
