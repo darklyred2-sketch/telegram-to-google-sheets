@@ -22,28 +22,31 @@ def telegram_webhook():
     text = ""
     file_data = None
 
-    # Обработка текстового сообщения
     if 'message' in update:
         message = update['message']
         chat_id = message['chat']['id']
         
-        # Если есть текст
+        # 🆕 Получаем текст из 'text' или 'caption'
         if 'text' in message:
             text = message['text']
-        
+        elif 'caption' in message:
+            text = message['caption']
+            app.logger.info(f"📎 Использую caption: {text}")
+        else:
+            app.logger.warning("⚠️ Ни text, ни caption не найдены")
+
+        app.logger.info(f"📩 Получен текст: {repr(text)}")  # 👈 ЛОГИРУЕМ ДЛЯ ОТЛАДКИ
+
         # Если есть документ (файл)
         if 'document' in message:
             file_id = message['document']['file_id']
             file_name = message['document'].get('file_name', 'unknown_file')
             mime_type = message['document'].get('mime_type', 'application/octet-stream')
             
-            # Получаем путь к файлу от Telegram
             file_path = get_telegram_file_path(file_id)
             if file_path:
-                # Скачиваем файл
                 file_content = download_file(file_path)
                 if file_content:
-                    # Конвертируем в base64
                     file_base64 = base64.b64encode(file_content).decode('utf-8')
                     file_data = {
                         "name": file_name,
@@ -51,20 +54,18 @@ def telegram_webhook():
                         "mimeType": mime_type
                     }
                     app.logger.info(f"📄 Файл получен: {file_name}")
-        
-        # Парсим текст (если есть)
+
+        # Парсим текст
         parsed_data = parse_message(text) if text else {}
         
         if parsed_data or file_data:
-            # Формируем payload
             payload = {
                 "data": parsed_data or {},
-                "file": file_data  # Может быть None — если файла нет
+                "file": file_data
             }
             
             try:
                 response = requests.post(APPS_SCRIPT_URL, json=payload, timeout=30)
-                
                 if response.status_code == 200:
                     send_telegram_message(chat_id, "✅ Данные и файл добавлены в таблицу!")
                     app.logger.info(f"📤 Успешно отправлено: {parsed_data}, файл: {'да' if file_data else 'нет'}")
@@ -72,7 +73,6 @@ def telegram_webhook():
                     error_msg = f"❌ Ошибка сервера таблицы: {response.status_code}"
                     send_telegram_message(chat_id, error_msg)
                     app.logger.error(error_msg)
-                    
             except Exception as e:
                 error_msg = "❌ Не удалось отправить данные."
                 send_telegram_message(chat_id, error_msg)
