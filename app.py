@@ -5,7 +5,7 @@ import base64
 import logging
 import traceback
 
-# 🚀 Создаём приложение — ЭТО ДОЛЖНО БЫТЬ В САМОМ НАЧАЛЕ!
+# 🚀 Создаём приложение
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -18,7 +18,7 @@ APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 def health_check():
     return "OK", 200
 
-# ➡️ Глобальный обработчик ошибок — чтобы не было 500
+# ➡️ Глобальный обработчик ошибок
 @app.errorhandler(Exception)
 def handle_exception(e):
     app.logger.error(f"💥 Необработанная ошибка:\n{traceback.format_exc()}")
@@ -30,6 +30,49 @@ def telegram_webhook():
     try:
         update = request.get_json()
         
+        # 🆕 Обработка нажатия inline-кнопок
+        if 'callback_query' in update:
+            callback = update['callback_query']
+            chat_id = callback['message']['chat']['id']
+            data = callback['data']
+
+            # Отправляем шаблон в ответ на нажатие кнопки
+            if data == "template_sdet":
+                template = (
+                    "Позиция: SENIOR SDET\n"
+                    "Команда: DATAPLATFORM\n"
+                    "Соискатель: \n"
+                    "Компания: \n"
+                    "\nПрикрепите резюме с этим текстом в описании."
+                )
+            elif data == "template_devops":
+                template = (
+                    "Позиция: SENIOR DEVOPS\n"
+                    "Команда: INFRA\n"
+                    "Соискатель: \n"
+                    "Компания: \n"
+                    "\nПрикрепите резюме с этим текстом в описании."
+                )
+            elif data == "template_frontend":
+                template = (
+                    "Позиция: SENIOR FRONTEND\n"
+                    "Команда: WEB\n"
+                    "Соискатель: \n"
+                    "Компания: \n"
+                    "\nПрикрепите резюме с этим текстом в описании."
+                )
+            else:
+                template = "Шаблон не найден."
+
+            # Отправляем шаблон пользователю
+            send_telegram_message(chat_id, template)
+
+            # Отвечаем на callback, чтобы убрать "часики" у пользователя
+            callback_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery"
+            requests.post(callback_url, json={"callback_query_id": callback['id']})
+
+            return jsonify({"status": "callback_handled"}), 200
+
         # Проверяем, есть ли сообщение
         if 'message' not in update:
             app.logger.warning("⚠️ Нет ключа 'message' в update")
@@ -42,7 +85,7 @@ def telegram_webhook():
             app.logger.warning("⚠️ Нет chat_id")
             return jsonify({"status": "no_chat_id"}), 200
 
-        # 📝 Получаем текст: из 'text' или 'caption'
+        # 📝 Получаем текст
         text = ""
         if 'text' in message:
             text = message['text']
@@ -55,6 +98,22 @@ def telegram_webhook():
 
         app.logger.info(f"📩 Получен текст: {repr(text)}")
 
+        # 🆕 Обработка команды /start
+        if text.startswith('/start'):
+            help_text = "👋 Привет! Я помогу тебе быстро отправить резюме.\n\nНажми /template, чтобы выбрать шаблон."
+            send_telegram_message(chat_id, help_text)
+            return jsonify({"status": "start_sent"}), 200
+
+        # 🆕 Обработка команды /template
+        if text == "/template":
+            inline_keyboard = [
+                [{"text": "SDET", "callback_data": "template_sdet"}],
+                [{"text": "DEVOPS", "callback_data": "template_devops"}],
+                [{"text": "FRONTEND", "callback_data": "template_frontend"}]
+            ]
+            send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
+            return jsonify({"status": "inline_template_sent"}), 200
+
         # 🆕 Проверяем, нужно ли боту реагировать
         should_respond = False
         chat_type = chat.get('type', '')
@@ -64,7 +123,7 @@ def telegram_webhook():
             app.logger.info("👤 Личный чат — обрабатываем сообщение")
 
         elif chat_type in ['group', 'supergroup']:
-            bot_username = "@Outstaff_connect_bot"  # 🔥 ЗАМЕНИ НА ИМЯ СВОЕГО БОТА, например "@HR_Bot"
+            bot_username = "@MyResumeBot"  # 🔥 ЗАМЕНИ НА ИМЯ СВОЕГО БОТА
             entities = message.get('entities', []) + message.get('caption_entities', [])
 
             for entity in entities:
@@ -73,7 +132,6 @@ def telegram_webhook():
                         mention = text[entity['offset']:entity['offset'] + entity['length']]
                         if mention.lower() == bot_username.lower():
                             should_respond = True
-                            # Удаляем упоминание из текста
                             text = text.replace(mention, "").strip()
                             app.logger.info(f"📢 Бот упомянут в группе — обрабатываем: {text}")
                             break
@@ -85,13 +143,26 @@ def telegram_webhook():
             app.logger.info("🔕 Бот не упомянут — игнорируем сообщение")
             return jsonify({"status": "ignored"}), 200
 
-        # 📄 Обработка файла (если есть)
+        # 📄 Обработка файла
         file_data = None
         if 'document' in message:
             try:
                 file_id = message['document']['file_id']
-                file_name = message['document'].get('file_name', 'unknown_file')
+                original_file_name = message['document'].get('file_name', 'unknown_file')
                 mime_type = message['document'].get('mime_type', 'application/octet-stream')
+                
+                applicant_name = "unknown"
+                position_name = "unknown"
+                if 'data' in locals() and parsed_
+                    applicant_name = parsed_data.get('Соискатель', 'unknown')
+                    position_name = parsed_data.get('Позиция', 'unknown')
+                
+                if '.' in original_file_name:
+                    ext = original_file_name.rsplit('.', 1)[1]
+                else:
+                    ext = 'pdf'
+                
+                new_file_name = f"{applicant_name} - {position_name}.{ext}"
                 
                 file_path = get_telegram_file_path(file_id)
                 if file_path:
@@ -99,21 +170,21 @@ def telegram_webhook():
                     if file_content:
                         file_base64 = base64.b64encode(file_content).decode('utf-8')
                         file_data = {
-                            "name": file_name,
+                            "name": new_file_name,
                             "base64": file_base64,
                             "mimeType": mime_type
                         }
-                        app.logger.info(f"📄 Файл получен: {file_name}")
+                        app.logger.info(f"📄 Файл переименован: {new_file_name}")
             except Exception as e:
                 app.logger.error(f"❌ Ошибка обработки файла: {str(e)}")
 
         # 🔍 Парсим текст
         parsed_data = parse_message(text) if text else {}
-        if not parsed_data:
+        if not parsed_
             send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
             return jsonify({"status": "parse_failed"}), 200
 
-        # 📤 Отправляем данные в Google Apps Script
+        # 📤 Отправляем в Google Apps Script
         payload = {
             "data": parsed_data,
             "file": file_data
@@ -195,6 +266,22 @@ def send_telegram_message(chat_id, text):
         requests.post(url, json=payload, timeout=5)
     except Exception as e:
         app.logger.error(f"❌ Не удалось отправить сообщение в Telegram: {str(e)}")
+
+# 📨 Отправляет сообщение с inline-клавиатурой
+def send_telegram_inline_keyboard(chat_id, text, inline_keyboard):
+    """Отправляет сообщение с inline-клавиатурой"""
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {
+        'chat_id': chat_id,
+        'text': text,
+        'reply_markup': {
+            'inline_keyboard': inline_keyboard
+        }
+    }
+    try:
+        requests.post(url, json=payload, timeout=5)
+    except Exception as e:
+        app.logger.error(f"❌ Не удалось отправить inline клавиатуру: {str(e)}")
 
 # 🚀 Запуск сервера
 if __name__ == '__main__':
