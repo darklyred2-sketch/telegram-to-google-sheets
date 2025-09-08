@@ -78,7 +78,8 @@ def telegram_webhook():
             
             try:
                 # Отправляем в Google Apps Script
-                response = requests.post(APPS_SCRIPT_URL, json=payload, timeout=30)
+                headers = {'Content-Type': 'application/json'}
+                response = requests.post(APPS_SCRIPT_URL, json=payload, headers=headers, timeout=30)
                 
                 if response.status_code == 200:
                     send_telegram_message(chat_id, "✅ Данные и файл добавлены в таблицу!")
