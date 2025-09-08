@@ -25,12 +25,11 @@ def telegram_webhook():
     text = ""
     file_data = None
 
-    # Проверяем, есть ли сообщение
     if 'message' in update:
         message = update['message']
         chat_id = message['chat']['id']
         
-        # 🆕 Получаем текст: из 'text' или из 'caption' (если файл прикреплён)
+        # Получаем текст из 'text' или 'caption'
         if 'text' in message:
             text = message['text']
         elif 'caption' in message:
@@ -38,65 +37,38 @@ def telegram_webhook():
             app.logger.info(f"📎 Использую caption: {text}")
         else:
             app.logger.warning("⚠️ Ни text, ни caption не найдены")
+            return jsonify({"status": "no_text"})
 
-        # 📝 Логируем полученный текст для отладки (repr покажет скрытые символы)
         app.logger.info(f"📩 Получен текст: {repr(text)}")
 
-        # 📄 Если есть документ (файл)
-        if 'document' in message:
-            try:
-                file_id = message['document']['file_id']
-                file_name = message['document'].get('file_name', 'unknown_file')
-                mime_type = message['document'].get('mime_type', 'application/octet-stream')
-                
-                # Получаем путь к файлу
-                file_path = get_telegram_file_path(file_id)
-                if file_path:
-                    # Скачиваем файл
-                    file_content = download_file(file_path)
-                    if file_content:
-                        # Конвертируем в base64
-                        file_base64 = base64.b64encode(file_content).decode('utf-8')
-                        file_data = {
-                            "name": file_name,
-                            "base64": file_base64,
-                            "mimeType": mime_type
-                        }
-                        app.logger.info(f"📄 Файл получен: {file_name}")
-            except Exception as e:
-                app.logger.error(f"❌ Ошибка обработки файла: {str(e)}")
+        # 🆕 Проверяем, нужно ли боту реагировать
+        should_respond = False
 
-        # 🔍 Парсим текстовое сообщение
-        parsed_data = parse_message(text) if text else {}
-        
-        # 📤 Отправляем данные, если есть текст или файл
-        if parsed_data or file_data:
-            payload = {
-                "data": parsed_data or {},
-                "file": file_data  # Может быть None — если файла нет
-            }
-            
-            try:
-                # Отправляем в Google Apps Script
-                headers = {'Content-Type': 'application/json'}
-                response = requests.post(APPS_SCRIPT_URL, json=payload, headers=headers, timeout=30)
-                
-                if response.status_code == 200:
-                    send_telegram_message(chat_id, "✅ Данные и файл добавлены в таблицу!")
-                    app.logger.info(f"📤 Успешно отправлено: {parsed_data}, файл: {'да' if file_data else 'нет'}")
-                else:
-                    error_msg = f"❌ Ошибка сервера таблицы: {response.status_code}"
-                    send_telegram_message(chat_id, error_msg)
-                    app.logger.error(error_msg)
-                    
-            except Exception as e:
-                error_msg = "❌ Не удалось отправить данные."
-                send_telegram_message(chat_id, error_msg)
-                app.logger.error(f"❌ Исключение при отправке: {str(e)}")
-        else:
-            send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте текст в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
-    
-    return jsonify({"status": "ok"})
+        # Сценарий 1: личный чат — всегда отвечаем
+        if message['chat']['type'] == 'private':
+            should_respond = True
+            app.logger.info("👤 Личный чат — обрабатываем сообщение")
+
+        # Сценарий 2: группа — проверяем упоминание бота
+        elif message['chat']['type'] in ['group', 'supergroup']:
+            bot_username = "@MyResumeBot"  # 🔥 ЗАМЕНИ НА СВОЁ ИМЯ БОТА, например @HR_Bot
+            entities = message.get('entities', []) + message.get('caption_entities', [])
+
+            for entity in entities:
+                if entity['type'] == 'mention':
+                    mention = text[entity['offset']:entity['offset'] + entity['length']]
+                    if mention.lower() == bot_username.lower():
+                        should_respond = True
+                        # Удаляем упоминание из текста, чтобы не мешало парсингу
+                        text = text.replace(mention, "").strip()
+                        app.logger.info(f"📢 Бот упомянут в группе — обрабатываем: {text}")
+                        break
+
+        if not should_respond:
+            app.logger.info("🔕 Бот не упомянут — игнорируем сообщение")
+            return jsonify({"status": "ignored"})
+
+        # ... остальной код (парсинг, файлы, отправка в Google Apps Script) ...
 
 # 🔗 Получает путь к файлу от Telegram API
 def get_telegram_file_path(file_id):
