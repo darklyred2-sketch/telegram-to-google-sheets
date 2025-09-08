@@ -70,7 +70,7 @@ def telegram_webhook():
         parsed_data = parse_message(text) if text else {}
         
         # 📤 Отправляем данные, если есть текст или файл
-        if parsed_data or file_
+        if parsed_data or file_data:
             payload = {
                 "data": parsed_data or {},
                 "file": file_data  # Может быть None — если файла нет
