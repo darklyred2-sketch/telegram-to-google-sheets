@@ -11,6 +11,6 @@
 5. Подключи этот репозиторий.
 6. В настройках добавь переменные окружения:
    - `8420537529:AAEPBPMlHAaBnIETk_EhypH44YAB5GviuxE` — токен бота
-   - `[APPS_SCRIPT_URL](https://script.google.com/macros/s/AKfycbxxFZwKnusLlec8XJtKd68GjsTj4zk5KCEfpEkC78mMpS7LyvWgtLhXGhbt-1s3E_nloA/exec)` — URL из Google Apps Script
+   - `https://script.google.com/macros/s/AKfycbx9vchYZXWVjP6lL-jzq4e0vfLI5o7b2ZXW9NW-skL_LaXaxU4vx_cF4SglQqQTy1DZlQ/exec)` — URL из Google Apps Script
 7. Нажми **«Create Web Service»** → жди ~1 минуту.
 8. После деплоя открой в браузере:
