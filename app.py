@@ -51,7 +51,7 @@ def telegram_webhook():
 
         # Сценарий 2: группа — проверяем упоминание бота
         elif message['chat']['type'] in ['group', 'supergroup']:
-            bot_username = "@MyResumeBot"  # 🔥 ЗАМЕНИ НА СВОЁ ИМЯ БОТА, например @HR_Bot
+            bot_username = "@Outstaff_connect_bot"  # 🔥 ЗАМЕНИ НА СВОЁ ИМЯ БОТА, например @HR_Bot
             entities = message.get('entities', []) + message.get('caption_entities', [])
 
             for entity in entities:
