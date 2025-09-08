@@ -109,7 +109,7 @@ def telegram_webhook():
 
         # 🔍 Парсим текст
         parsed_data = parse_message(text) if text else {}
-        if not parsed_
+        if not parsed_data:
             send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
             return jsonify({"status": "parse_failed"}), 200
 
