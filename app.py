@@ -1,66 +1,112 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import base64
 import logging
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# Получаем токен и URL из переменных окружения
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 
-# ➡️ Обработчик для проверки здоровья сервиса
 @app.route('/', methods=['GET'])
 def health_check():
     return "OK", 200
 
-# ➡️ Обработчик вебхука от Telegram
 @app.route('/webhook', methods=['POST'])
 def telegram_webhook():
     update = request.get_json()
     
-    # Проверяем, есть ли текст в сообщении
-    if 'message' in update and 'text' in update['message']:
-        text = update['message']['text']
-        chat_id = update['message']['chat']['id']
+    chat_id = None
+    text = ""
+    file_data = None
+
+    # Обработка текстового сообщения
+    if 'message' in update:
+        message = update['message']
+        chat_id = message['chat']['id']
         
-        # Парсим сообщение (формат "Ключ: Значение")
-        data = parse_message(text)
+        # Если есть текст
+        if 'text' in message:
+            text = message['text']
         
-        if data:
-            # ➡️ ОТПРАВЛЯЕМ ТОЛЬКО НУЖНЫЕ ПОЛЯ — БЕЗ "date"
+        # Если есть документ (файл)
+        if 'document' in message:
+            file_id = message['document']['file_id']
+            file_name = message['document'].get('file_name', 'unknown_file')
+            mime_type = message['document'].get('mime_type', 'application/octet-stream')
+            
+            # Получаем путь к файлу от Telegram
+            file_path = get_telegram_file_path(file_id)
+            if file_path:
+                # Скачиваем файл
+                file_content = download_file(file_path)
+                if file_content:
+                    # Конвертируем в base64
+                    file_base64 = base64.b64encode(file_content).decode('utf-8')
+                    file_data = {
+                        "name": file_name,
+                        "base64": file_base64,
+                        "mimeType": mime_type
+                    }
+                    app.logger.info(f"📄 Файл получен: {file_name}")
+        
+        # Парсим текст (если есть)
+        parsed_data = parse_message(text) if text else {}
+        
+        if parsed_data or file_data:
+            # Формируем payload
             payload = {
-                "position": data['Позиция'],
-                "team": data['Команда'],
-                "applicant": data['Соискатель'],
-                "company": data['Компания']
-                # Поле "date" НЕ отправляем — оно будет сгенерировано в Google Apps Script
+                "data": parsed_data or {},
+                "file": file_data  # Может быть None — если файла нет
             }
             
             try:
-                # Отправляем данные в Google Apps Script
-                response = requests.post(APPS_SCRIPT_URL, json=payload, timeout=10)
+                response = requests.post(APPS_SCRIPT_URL, json=payload, timeout=30)
                 
                 if response.status_code == 200:
-                    send_telegram_message(chat_id, "✅ Данные добавлены в таблицу!")
-                    app.logger.info(f"✅ Успешно отправлено: {payload}")
+                    send_telegram_message(chat_id, "✅ Данные и файл добавлены в таблицу!")
+                    app.logger.info(f"📤 Успешно отправлено: {parsed_data}, файл: {'да' if file_data else 'нет'}")
                 else:
-                    send_telegram_message(chat_id, f"❌ Ошибка сервера таблицы: {response.status_code}")
-                    app.logger.error(f"❌ Ошибка Google Apps Script: {response.text}")
+                    error_msg = f"❌ Ошибка сервера таблицы: {response.status_code}"
+                    send_telegram_message(chat_id, error_msg)
+                    app.logger.error(error_msg)
                     
             except Exception as e:
-                send_telegram_message(chat_id, "❌ Не удалось отправить данные.")
-                app.logger.error(f"❌ Исключение при отправке: {str(e)}")
-                
+                error_msg = "❌ Не удалось отправить данные."
+                send_telegram_message(chat_id, error_msg)
+                app.logger.error(f"❌ Исключение: {str(e)}")
         else:
-            send_telegram_message(chat_id, "⚠️ Неверный формат сообщения. Используй:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
-            app.logger.warning(f"⚠️ Неверный формат: {text}")
+            send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте текст в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
     
     return jsonify({"status": "ok"})
 
+def get_telegram_file_path(file_id):
+    """Получает путь к файлу от Telegram API"""
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getFile?file_id={file_id}"
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('ok'):
+                return result['result']['file_path']
+    except Exception as e:
+        app.logger.error(f"❌ Ошибка получения пути файла: {str(e)}")
+    return None
+
+def download_file(file_path):
+    """Скачивает файл с серверов Telegram"""
+    file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_path}"
+    try:
+        response = requests.get(file_url, timeout=30)
+        if response.status_code == 200:
+            return response.content
+    except Exception as e:
+        app.logger.error(f"❌ Ошибка скачивания файла: {str(e)}")
+    return None
+
 def parse_message(text):
-    """Парсит текст сообщения вида 'Ключ: Значение'"""
     lines = text.split('\n')
     parsed = {}
     for line in lines:
@@ -68,7 +114,6 @@ def parse_message(text):
             key, value = line.split(':', 1)
             parsed[key.strip()] = value.strip()
     
-    # Проверяем, что все нужные поля есть (БЕЗ "Дата")
     required = ['Позиция', 'Команда', 'Соискатель', 'Компания']
     if all(key in parsed for key in required):
         return parsed
@@ -76,7 +121,6 @@ def parse_message(text):
         return None
 
 def send_telegram_message(chat_id, text):
-    """Отправляет сообщение обратно в Telegram"""
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         'chat_id': chat_id,
