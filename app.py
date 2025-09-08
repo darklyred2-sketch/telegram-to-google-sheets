@@ -4,6 +4,12 @@ import os
 
 app = Flask(__name__)
 
+# ➡️ ДОБАВЬ ЭТОТ БЛОК:
+@app.route('/', methods=['GET'])
+def health_check():
+    return "OK", 200
+
+
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 
