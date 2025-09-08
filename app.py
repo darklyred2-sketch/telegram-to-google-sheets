@@ -153,7 +153,7 @@ def telegram_webhook():
                 
                 applicant_name = "unknown"
                 position_name = "unknown"
-                if 'data' in locals() and parsed_
+                if 'data' in locals() and parsed_data:
                     applicant_name = parsed_data.get('Соискатель', 'unknown')
                     position_name = parsed_data.get('Позиция', 'unknown')
                 
