@@ -39,6 +39,7 @@ def telegram_webhook():
             # Отправляем шаблон в ответ на нажатие кнопки
             if data == "template_sdet":
                 template = (
+                    "@Outstaff_connect_bot\n"
                     "Позиция: SENIOR SDET\n"
                     "Команда: DATAPLATFORM\n"
                     "Соискатель: \n"
@@ -47,6 +48,7 @@ def telegram_webhook():
                 )
             elif data == "template_devops":
                 template = (
+                    "@Outstaff_connect_bot\n"
                     "Позиция: SENIOR DEVOPS\n"
                     "Команда: INFRA\n"
                     "Соискатель: \n"
@@ -55,6 +57,7 @@ def telegram_webhook():
                 )
             elif data == "template_frontend":
                 template = (
+                    "@Outstaff_connect_bot\n"
                     "Позиция: SENIOR FRONTEND\n"
                     "Команда: WEB\n"
                     "Соискатель: \n"
