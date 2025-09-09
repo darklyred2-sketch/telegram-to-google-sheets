@@ -37,7 +37,7 @@ def telegram_webhook():
             data = callback['data']
 
             # Отправляем шаблон в ответ на нажатие кнопки
-            if data == "template_sdet":
+            if data == "template_Тестировщик":
                 template = (
                     "Позиция: Тестировщик\n"
                     "Команда: DATAHUB\n"
@@ -64,7 +64,7 @@ def telegram_webhook():
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
                     "\nOutstaff_connect_bot"
                 )
-            elif data == "template_frontend":
+            elif data == "template_Архитектор":
                 template = (
                     "Позиция: Архитектор\n"
                     "Команда: DATAPLATFORM\n"
@@ -73,7 +73,7 @@ def telegram_webhook():
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
                     "\nOutstaff_connect_bot"
                 )
-            elif data == "template_frontend":
+            elif data == "template_PYTHON":
                 template = (
                     "Позиция: Разработчик PYTHON\n"
                     "Команда: DATAPLATFORM\n"
@@ -125,12 +125,14 @@ def telegram_webhook():
             send_telegram_message(chat_id, help_text)
             return jsonify({"status": "start_sent"}), 200
 
-        # 🆕 Обработка команды /template
-        if text == "/template":
+        # 🆕 Обработка команды /template@Outstaff_connect_bot
+        if text == "/template@Outstaff_connect_bot":
             inline_keyboard = [
-                [{"text": "SDET", "callback_data": "template_sdet"}],
+                [{"text": "Тестировщик", "callback_data": "template_Тестировщик"}],
                 [{"text": "DEVOPS", "callback_data": "template_devops"}],
-                [{"text": "FRONTEND", "callback_data": "template_frontend"}]
+                [{"text": "FRONTEND", "callback_data": "template_frontend"}],
+                [{"text": "Архитектор", "callback_data": "template_Архитектор"}],
+                [{"text": "PYTHON", "callback_data": "template_PYTHON"}]
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
