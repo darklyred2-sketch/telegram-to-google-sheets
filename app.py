@@ -44,6 +44,7 @@ def telegram_webhook():
                     "Соискатель: \n"
                     "Компания: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\nOutstaff_connect_bot"
                 )
             elif data == "template_devops":
                 template = (
@@ -52,6 +53,7 @@ def telegram_webhook():
                     "Соискатель: \n"
                     "Компания: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\nOutstaff_connect_bot"
                 )
             elif data == "template_frontend":
                 template = (
@@ -60,6 +62,7 @@ def telegram_webhook():
                     "Соискатель: \n"
                     "Компания: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\nOutstaff_connect_bot"
                 )
             else:
                 template = "Шаблон не найден."
