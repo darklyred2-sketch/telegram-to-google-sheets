@@ -73,7 +73,7 @@ def telegram_webhook():
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
                     "\nOutstaff_connect_bot"
                 )
-             elif data == "template_frontend":
+            elif data == "template_frontend":
                 template = (
                     "Позиция: Разработчик PYTHON\n"
                     "Команда: DATAPLATFORM\n"
