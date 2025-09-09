@@ -39,8 +39,8 @@ def telegram_webhook():
             # Отправляем шаблон в ответ на нажатие кнопки
             if data == "template_sdet":
                 template = (
-                    "Позиция: SENIOR SDET\n"
-                    "Команда: DATAPLATFORM\n"
+                    "Позиция: Тестировщик\n"
+                    "Команда: DATAHUB\n"
                     "Соискатель: \n"
                     "Компания: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -48,8 +48,8 @@ def telegram_webhook():
                 )
             elif data == "template_devops":
                 template = (
-                    "Позиция: SENIOR DEVOPS\n"
-                    "Команда: INFRA\n"
+                    "Позиция: DEVOPS\n"
+                    "Команда: DATAMASTERS\n"
                     "Соискатель: \n"
                     "Компания: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -57,8 +57,26 @@ def telegram_webhook():
                 )
             elif data == "template_frontend":
                 template = (
-                    "Позиция: SENIOR FRONTEND\n"
-                    "Команда: WEB\n"
+                    "Позиция: Разработчик FRONTEND\n"
+                    "Команда: DATAHUB\n"
+                    "Соискатель: \n"
+                    "Компания: \n"
+                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\nOutstaff_connect_bot"
+                )
+            elif data == "template_frontend":
+                template = (
+                    "Позиция: Архитектор\n"
+                    "Команда: DATAPLATFORM\n"
+                    "Соискатель: \n"
+                    "Компания: \n"
+                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\nOutstaff_connect_bot"
+                )
+             elif data == "template_frontend":
+                template = (
+                    "Позиция: Разработчик PYTHON\n"
+                    "Команда: DATAPLATFORM\n"
                     "Соискатель: \n"
                     "Компания: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -103,7 +121,7 @@ def telegram_webhook():
 
         # 🆕 Обработка команды /start
         if text.startswith('/start'):
-            help_text = "👋 Привет! Я помогу тебе быстро отправить резюме.\n\nНажми /template, чтобы выбрать шаблон."
+            help_text = "👋 Привет! Я помогу тебе быстро отправить резюме.\n\nНажми /template@Outstaff_connect_bot, чтобы выбрать шаблон."
             send_telegram_message(chat_id, help_text)
             return jsonify({"status": "start_sent"}), 200
 
@@ -146,19 +164,35 @@ def telegram_webhook():
             app.logger.info("🔕 Бот не упомянут — игнорируем сообщение")
             return jsonify({"status": "ignored"}), 200
 
-        # 📄 Обработка файла
+        # 🔍 Парсим текст
+        parsed_data = parse_message(text) if text else {}
+        if not parsed_data:
+            send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
+            return jsonify({"status": "parse_failed"}), 200
+
+        # 📄 Проверяем наличие файла в сообщении
+        has_document = 'document' in message
+        has_photo = 'photo' in message and len(message['photo']) > 0
+        
+        if not has_document and not has_photo:
+            error_message = (
+                "❌ Файл не найден в сообщении.\n\n"
+                "Пожалуйста, прикрепите файл резюме к сообщению с данными.\n\n"
+            )
+            send_telegram_message(chat_id, error_message)
+            app.logger.warning("⚠️ Сообщение не содержит файла - остановка обработки")
+            return jsonify({"status": "no_file"}), 200
+
+        # 📄 Обработка файла (документа)
         file_data = None
-        if 'document' in message:
+        if has_document:
             try:
                 file_id = message['document']['file_id']
                 original_file_name = message['document'].get('file_name', 'unknown_file')
                 mime_type = message['document'].get('mime_type', 'application/octet-stream')
                 
-                applicant_name = "unknown"
-                position_name = "unknown"
-                if 'data' in locals() and parsed_data:
-                    applicant_name = parsed_data.get('Соискатель', 'unknown')
-                    position_name = parsed_data.get('Позиция', 'unknown')
+                applicant_name = parsed_data.get('Соискатель', 'unknown')
+                position_name = parsed_data.get('Позиция', 'unknown')
                 
                 if '.' in original_file_name:
                     ext = original_file_name.rsplit('.', 1)[1]
@@ -180,12 +214,35 @@ def telegram_webhook():
                         app.logger.info(f"📄 Файл переименован: {new_file_name}")
             except Exception as e:
                 app.logger.error(f"❌ Ошибка обработки файла: {str(e)}")
+                send_telegram_message(chat_id, "❌ Ошибка обработки файла. Попробуйте отправить снова.")
+                return jsonify({"status": "file_processing_error"}), 200
 
-        # 🔍 Парсим текст
-        parsed_data = parse_message(text) if text else {}
-        if not parsed_data:
-            send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
-            return jsonify({"status": "parse_failed"}), 200
+        # 📄 Обработка фото (если отправлено как фото вместо документа)
+        elif has_photo:
+            try:
+                # Берем фото наибольшего размера (последнее в массиве)
+                photo = message['photo'][-1]
+                file_id = photo['file_id']
+                
+                applicant_name = parsed_data.get('Соискатель', 'unknown')
+                position_name = parsed_data.get('Позиция', 'unknown')
+                new_file_name = f"{applicant_name} - {position_name}.jpg"
+                
+                file_path = get_telegram_file_path(file_id)
+                if file_path:
+                    file_content = download_file(file_path)
+                    if file_content:
+                        file_base64 = base64.b64encode(file_content).decode('utf-8')
+                        file_data = {
+                            "name": new_file_name,
+                            "base64": file_base64,
+                            "mimeType": "image/jpeg"
+                        }
+                        app.logger.info(f"📸 Фото обработано: {new_file_name}")
+            except Exception as e:
+                app.logger.error(f"❌ Ошибка обработки фото: {str(e)}")
+                send_telegram_message(chat_id, "❌ Ошибка обработки фото. Попробуйте отправить файл как документ.")
+                return jsonify({"status": "photo_processing_error"}), 200
 
         # 📤 Отправляем в Google Apps Script
         payload = {
