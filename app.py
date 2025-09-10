@@ -12,6 +12,7 @@ logging.basicConfig(level=logging.INFO)
 # 🧩 Получаем токен и URL из переменных окружения
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
+COMPANY_SCRIPT_URL = os.getenv("COMPANY_SCRIPT_URL")  # URL для получения компании
 
 # ➡️ Обработчик для проверки здоровья сервиса
 @app.route('/', methods=['GET'])
@@ -146,7 +147,7 @@ def telegram_webhook():
             app.logger.info("👤 Личный чат — обрабатываем сообщение")
 
         elif chat_type in ['group', 'supergroup']:
-            bot_username = "@Outstaff_connect_bot"  # 🔥 ЗАМЕНИ НА ИМЯ СВОЕГО БОТА
+            bot_username = "@Outstaff_connect_bot"
             entities = message.get('entities', []) + message.get('caption_entities', [])
 
             for entity in entities:
@@ -257,7 +258,8 @@ def telegram_webhook():
         # 📤 Отправляем в Google Apps Script
         payload = {
             "data": parsed_data,
-            "file": file_data
+            "file": file_data,
+            "chatId": chat_id  # Добавляем chatId в payload
         }
 
         try:
@@ -323,6 +325,34 @@ def parse_message(text):
             return None
     except Exception as e:
         app.logger.error(f"❌ Ошибка парсинга: {str(e)}")
+        return None
+
+# 🏢 Получает название компании по chat_id из Google Таблицы
+def get_company_by_chat_id(chat_id):
+    """Получает название компании из Google Таблицы по chat_id"""
+    try:
+        # Если URL для получения компании не настроен, возвращаем None
+        if not COMPANY_SCRIPT_URL:
+            app.logger.warning("⚠️ COMPANY_SCRIPT_URL не настроен, пропускаем определение компании")
+            return None
+            
+        payload = {
+            "action": "get_company",
+            "chatId": str(chat_id)
+        }
+        
+        response = requests.post(COMPANY_SCRIPT_URL, json=payload, timeout=10)
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('status') == 'success' and result.get('company'):
+                return result.get('company')
+            else:
+                app.logger.warning(f"⚠️ Компания не найдена для chat_id {chat_id}: {result.get('message', 'Unknown error')}")
+        
+        return None
+        
+    except Exception as e:
+        app.logger.error(f"❌ Ошибка получения компании по chat_id {chat_id}: {str(e)}")
         return None
 
 # 📨 Отправляет сообщение обратно в Telegram
