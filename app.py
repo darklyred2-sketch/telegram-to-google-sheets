@@ -42,10 +42,10 @@ def telegram_webhook():
                 vacancy_map = {
                     "vacancy_Тестировщик": "https://docs.google.com/document/d/1WD-X-jStPjSgJvs9428u-eHU7QTr6Almc0IgFq3limM/edit?tab=t.0",
                     "vacancy_DEVOPS": "https://docs.google.com/document/d/1AbuouxaQLJsn9IpMMrbBuj0Dps6aUJD4gYm9pOduZA4/edit?tab=t.0",
-                    "vacancy_FRONTEND": "https://docs.google.com/document/d/1nCk58gHYmR3475_n_IEN9HcnspWxxGbAnD55JxG6uSw/edit?tab=t.0"
-                    "vacancy_Архитектор": "https://docs.google.com/document/d/16qFb_OCqnEuy0xK0qpmMHZ-KKAbrhulKlFFxT7lSYiQ/edit?usp=sharing"
-                    "vacancy_PYPTON": "https://docs.google.com/document/d/1SK9gnwlB_znxQENpgO0FaPbeo9ryH1V5KaQktYN2jXc/edit?usp=sharing"
-                    "vacancy_DEVOPS GREENPLUM": "https://docs.google.com/document/d/1XC3no-zSn1yHJ5H5XKjSyXQ4qlhCYMJ2b2d_s16zwOk/edit?tab=t.0"
+                    "vacancy_FRONTEND": "https://docs.google.com/document/d/1nCk58gHYmR3475_n_IEN9HcnspWxxGbAnD55JxG6uSw/edit?tab=t.0",
+                    "vacancy_Архитектор": "https://docs.google.com/document/d/16qFb_OCqnEuy0xK0qpmMHZ-KKAbrhulKlFFxT7lSYiQ/edit?usp=sharing",
+                    "vacancy_PYPTON": "https://docs.google.com/document/d/1SK9gnwlB_znxQENpgO0FaPbeo9ryH1V5KaQktYN2jXc/edit?usp=sharing",
+                    "vacancy_DEVOPS GREENPLUM": "https://docs.google.com/document/d/1XC3no-zSn1yHJ5H5XKjSyXQ4qlhCYMJ2b2d_s16zwOk/edit?tab=t.0",
                     "vacancy_DEV GREENPLUM": "https://docs.google.com/document/d/1v3MH3On2-nqsN2OHBeYyE1JEe4qcOK2CoFgL7c1gnGM/edit?tab=t.0"
                 }
                 url = vacancy_map.get(data, "Ссылка не найдена.")
@@ -158,8 +158,8 @@ def telegram_webhook():
                 [{"text": "DEVOPS", "callback_data": "template_devops"}],
                 [{"text": "FRONTEND", "callback_data": "template_frontend"}],
                 [{"text": "Архитектор", "callback_data": "template_Архитектор"}],
-                [{"text": "PYTHON", "callback_data": "template_PYTHON"}]
-                [{"text": "DEVOPS GREENPLUM", "callback_data": "template_DEVOPS GREENPLUM"}]
+                [{"text": "PYTHON", "callback_data": "template_PYTHON"}],
+                [{"text": "DEVOPS GREENPLUM", "callback_data": "template_DEVOPS GREENPLUM"}],
                 [{"text": "DEV GREENPLUM", "callback_data": "template_Разработчик GREENPLUM"}]
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
@@ -170,10 +170,10 @@ def telegram_webhook():
             inline_keyboard = [
                 [{"text": "Тестировщик", "callback_data": "vacancy_Тестировщик"}],
                 [{"text": "DEVOPS", "callback_data": "vacancy_DEVOPS"}],
-                [{"text": "FRONTEND", "callback_data": "vacancy_FRONTEND"}]
-                [{"text": "Архитектор", "callback_data": "vacancy_Архитектор"}]
-                [{"text": "PYTHON", "callback_data": "vacancy_PYTHON"}]
-                [{"text": "DEVOPS GREENPLUM", "callback_data": "vacancy_DEVOPS GREENPLUM"}]
+                [{"text": "FRONTEND", "callback_data": "vacancy_FRONTEND"}],
+                [{"text": "Архитектор", "callback_data": "vacancy_Архитектор"}],
+                [{"text": "PYTHON", "callback_data": "vacancy_PYTHON"}],
+                [{"text": "DEVOPS GREENPLUM", "callback_data": "vacancy_DEVOPS GREENPLUM"}],
                 [{"text": "DEV GREENPLUM", "callback_data": "vacancy_Разработчик GREENPLUM"}]
             ]
             send_telegram_inline_keyboard(chat_id, "выберете вакансию, по которой хотите посмотреть требования", inline_keyboard)
