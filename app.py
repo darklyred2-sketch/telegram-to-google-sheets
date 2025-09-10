@@ -43,7 +43,7 @@ def telegram_webhook():
                     "Позиция: SENIOR SDET\n"
                     "Команда: DATAHUB\n"
                     "Соискатель: \n"
-                    "\n<a href="https://docs.google.com/document/d/1WD-X-jStPjSgJvs9428u-eHU7QTr6Almc0IgFq3limM/edit?tab=t.0">Описание вакансии</a>\n"
+                    "\nОписание вакансии - https://docs.google.com/document/d/1WD-X-jStPjSgJvs9428u-eHU7QTr6Almc0IgFq3limM/edit?tab=t.0"
                     "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
