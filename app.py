@@ -172,6 +172,14 @@ def telegram_webhook():
             send_telegram_message(chat_id, "⚠️ Не удалось распознать данные. Отправьте в формате:\nПозиция: ...\nКоманда: ...\nСоискатель: ...\nКомпания: ...")
             return jsonify({"status": "parse_failed"}), 200
 
+        # 🆕 Получаем название компании из базы по chat_id
+        company_name = get_company_by_chat_id(chat_id)
+        if company_name:
+            parsed_data['Компания'] = company_name
+            app.logger.info(f"🏢 Компания определена по chat_id {chat_id}: {company_name}")
+        else:
+            app.logger.info(f"ℹ️ Компания не найдена для chat_id {chat_id}, используем из сообщения")
+
         # 📄 Проверяем наличие файла в сообщении
         has_document = 'document' in message
         has_photo = 'photo' in message and len(message['photo']) > 0
