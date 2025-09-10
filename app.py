@@ -78,6 +78,10 @@ def telegram_webhook():
                     "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
+            elif data == "template_Инструкция":
+                template = (
+                    "Ссылка на инструкцию: https://docs.google.com/document/d/11PR2EbZZVRao9ypcnoBzjYjRYNCI34a15rvYa0uIsdc/edit?tab=t.0\n"
+                )
             else:
                 template = "Шаблон не найден."
 
