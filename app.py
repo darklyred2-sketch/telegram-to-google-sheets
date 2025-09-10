@@ -82,6 +82,9 @@ def telegram_webhook():
                 template = (
                     "Ссылка на инструкцию: https://docs.google.com/document/d/11PR2EbZZVRao9ypcnoBzjYjRYNCI34a15rvYa0uIsdc/edit?tab=t.0\n"
                 )
+            elif data == "vacancy_Тестировщик":
+                template = (
+                    "Описание вакансии: https://docs.google.com/document/d/1WD-X-jStPjSgJvs9428u-eHU7QTr6Almc0IgFq3limM/edit?tab=t.0"
             else:
                 template = "Шаблон не найден."
 
@@ -121,7 +124,7 @@ def telegram_webhook():
 
         # 🆕 Обработка команды /start
         if text.startswith('/start'):
-            help_text = "👋 Привет! Я помогу тебе быстро отправить резюме.\n\nНажми /template@Outstaff_connect_bot, чтобы выбрать шаблон."
+            help_text = "👋 Привет! Я помогу тебе быстро отправить резюме.\n\nНажми /template@Outstaff_connect_bot, чтобы выбрать шаблон.\nНажми /vacancy@Outstaff_connect_bot, чтобы посмотреть описание вакансий."
             send_telegram_message(chat_id, help_text)
             return jsonify({"status": "start_sent"}), 200
 
@@ -134,6 +137,14 @@ def telegram_webhook():
                 [{"text": "Архитектор", "callback_data": "template_Архитектор"}],
                 [{"text": "PYTHON", "callback_data": "template_PYTHON"}]
                 [{"text": "Инструкция", "callback_data": "template_Инструкция"}]
+            ]
+            send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
+            return jsonify({"status": "inline_template_sent"}), 200
+            
+        # 🆕 Обработка команды /template@Outstaff_connect_bot
+        if text == "/vacancy@Outstaff_connect_bot":
+            inline_keyboard = [
+                [{"text": "Тестировщик", "callback_data": "template_Тестировщик"}],
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
