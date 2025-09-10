@@ -85,6 +85,7 @@ def telegram_webhook():
             elif data == "vacancy_Тестировщик":
                 template = (
                     "Описание вакансии: https://docs.google.com/document/d/1WD-X-jStPjSgJvs9428u-eHU7QTr6Almc0IgFq3limM/edit?tab=t.0"
+                )
             else:
                 template = "Шаблон не найден."
 
