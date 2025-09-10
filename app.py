@@ -43,7 +43,7 @@ def telegram_webhook():
                     "Позиция: SENIOR SDET\n"
                     "Команда: DATAHUB\n"
                     "Соискатель: \n"
-                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
             elif data == "template_devops":
@@ -51,7 +51,7 @@ def telegram_webhook():
                     "Позиция: SENIOR DEVOPS\n"
                     "Команда: DATAMASTERS\n"
                     "Соискатель: \n"
-                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
             elif data == "template_frontend":
@@ -59,7 +59,7 @@ def telegram_webhook():
                     "Позиция: SENIOR FRONTEND\n"
                     "Команда: DATAHUB\n"
                     "Соискатель: \n"
-                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
             elif data == "template_Архитектор":
@@ -67,7 +67,7 @@ def telegram_webhook():
                     "Позиция: MIDDLE DATA ARCHITECT\n"
                     "Команда: DATAPLATFORM\n"
                     "Соискатель: \n"
-                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
             elif data == "template_PYTHON":
@@ -75,7 +75,7 @@ def telegram_webhook():
                     "Позиция: SENIOR DEV PYTHON\n"
                     "Команда: DATAPLATFORM\n"
                     "Соискатель: \n"
-                    "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
+                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
                 )
             else:
