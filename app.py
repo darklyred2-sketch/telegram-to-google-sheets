@@ -40,7 +40,7 @@ def telegram_webhook():
             # Отправляем шаблон в ответ на нажатие кнопки
             if data == "template_Тестировщик":
                 template = (
-                    "Позиция: Тестировщик\n"
+                    "Позиция: SENIOR SDET\n"
                     "Команда: DATAHUB\n"
                     "Соискатель: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -48,7 +48,7 @@ def telegram_webhook():
                 )
             elif data == "template_devops":
                 template = (
-                    "Позиция: DEVOPS\n"
+                    "Позиция: SENIOR DEVOPS\n"
                     "Команда: DATAMASTERS\n"
                     "Соискатель: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -56,7 +56,7 @@ def telegram_webhook():
                 )
             elif data == "template_frontend":
                 template = (
-                    "Позиция: Разработчик FRONTEND\n"
+                    "Позиция: SENIOR FRONTEND\n"
                     "Команда: DATAHUB\n"
                     "Соискатель: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -64,7 +64,7 @@ def telegram_webhook():
                 )
             elif data == "template_Архитектор":
                 template = (
-                    "Позиция: Архитектор\n"
+                    "Позиция: MIDDLE DATA ARCHITECT\n"
                     "Команда: DATAPLATFORM\n"
                     "Соискатель: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
@@ -72,7 +72,7 @@ def telegram_webhook():
                 )
             elif data == "template_PYTHON":
                 template = (
-                    "Позиция: Разработчик PYTHON\n"
+                    "Позиция: SENIOR DEV PYTHON\n"
                     "Команда: DATAPLATFORM\n"
                     "Соискатель: \n"
                     "\nПрикрепите резюме с этим текстом в описании и тэгни бота."
