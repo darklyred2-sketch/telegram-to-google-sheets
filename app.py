@@ -142,10 +142,10 @@ def telegram_webhook():
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
             
-        # 🆕 Обработка команды /template@Outstaff_connect_bot
+        # 🆕 Обработка команды /vacancy@Outstaff_connect_bot
         if text == "/vacancy@Outstaff_connect_bot":
             inline_keyboard = [
-                [{"text": "Тестировщик", "callback_data": "template_Тестировщик"}],
+                [{"text": "Тестировщик", "callback_data": "vacancy_Тестировщик"}],
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
