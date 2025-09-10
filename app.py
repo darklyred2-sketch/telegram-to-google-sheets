@@ -133,6 +133,7 @@ def telegram_webhook():
                 [{"text": "FRONTEND", "callback_data": "template_frontend"}],
                 [{"text": "Архитектор", "callback_data": "template_Архитектор"}],
                 [{"text": "PYTHON", "callback_data": "template_PYTHON"}]
+                [{"text": "Инструкция", "callback_data": "template_Инструкция"}]
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
