@@ -317,7 +317,7 @@ def parse_message(text):
                 key, value = line.split(':', 1)
                 parsed[key.strip()] = value.strip()
         
-        required = ['Позиция', 'Команда', 'Соискатель', 'Компания']
+        required = ['Позиция', 'Команда', 'Соискатель']
         if all(key in parsed for key in required):
             return parsed
         else:
