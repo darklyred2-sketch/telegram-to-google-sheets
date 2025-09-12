@@ -4,6 +4,8 @@ import os
 import base64
 import logging
 import traceback
+from telegram import Update, ReactionTypeEmoji
+from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
 # 🚀 Создаём приложение
 app = Flask(__name__)
