@@ -4,6 +4,7 @@ import os
 import base64
 import logging
 import traceback
+import gspread
 from telegram import Update, ReactionTypeEmoji
 from telegram.ext import Application, ContextTypes, MessageHandler, filters
 
