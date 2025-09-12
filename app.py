@@ -322,6 +322,69 @@ def telegram_webhook():
     except Exception as e:
         app.logger.error(f"💥 Ошибка в telegram_webhook: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
+#Начало блока с обработкой смайла__________________________________________________________________________________________________
+#Поиск строки по коду в колонке A
+def find_row_by_code(sheet, code):
+    try:
+        # Получаем все значения из колонки A
+        col_a = sheet.col_values(1)
+        # Ищем код в колонке A (по точному совпадению)
+        row_index = None
+        for idx, value in enumerate(col_a, start=1):
+            if value.strip() == code.strip():
+                row_index = idx
+                break
+        return row_index
+    except Exception as e:
+        print(f"Ошибка при поиске строки: {e}")
+        return None
+
+# Обновление значения в колонке H
+def update_cell_h(sheet, row, value):
+    try:
+        # Обновляем ячейку в колонке H (индекс 8)
+        sheet.update_cell(row, 8, value)
+        print(f"Обновлена ячейка H{row} на значение: {value}")
+    except Exception as e:
+        print(f"Ошибка при обновлении ячейки: {e}")
+
+# Обработка реакций в Telegram
+async def handle_reaction(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    reaction = update.message_reaction
+    if reaction and reaction.new_reaction:
+        user = reaction.user
+        message = reaction.message
+        chat_id = reaction.chat_id
+        
+        # Проверяем, что сообщение имеет текст и начинается с "ID:"
+        if message and message.text and message.text.startswith("ID:"):
+            # Извлекаем код из текста сообщения (после "ID:")
+            code = message.text.split("ID:")[1].strip().split()[0]  # Берем первое слово после "ID:"
+            print(f"Найден код: {code} в сообщении от пользователя {user.username}")
+            
+            # Определяем эмодзи
+            for reaction_type in reaction.new_reaction:
+                if isinstance(reaction_type, ReactionTypeEmoji):
+                    emoji = reaction_type.emoji
+                    value_to_update = None
+                    if emoji == "👍":
+                        value_to_update = "TEST"
+                    elif emoji == "👎":
+                        value_to_update = "LOW SKILL"
+                    
+                    if value_to_update:
+                        # Инициализируем Google Sheet
+                        sheet = init_google_sheet()
+                        # Ищем строку по коду в колонке A
+                        row_index = find_row_by_code(sheet, code)
+                        if row_index:
+                            # Обновляем ячейку в колонке H
+                            update_cell_h(sheet, row_index, value_to_update)
+                            print(f"Реакция {emoji} от {user.username} обработана для кода {code}")
+                        else:
+                            print(f"Строка с кодом {code} не найдена в таблице")
+                    break
+#Конец блока обработки по смайлу________________________________________________________________________
 
 # 🔗 Получает путь к файлу от Telegram API
 def get_telegram_file_path(file_id):
