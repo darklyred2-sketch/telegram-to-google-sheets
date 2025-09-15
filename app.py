@@ -42,10 +42,8 @@ def telegram_webhook():
             if data.startswith("vacancy_"):
                 vacancy_map = {
                     "vacancy_Тестировщик": "https://docs.google.com/document/d/1WD-X-jStPjSgJvs9428u-eHU7QTr6Almc0IgFq3limM/edit?tab=t.0",
-                    "vacancy_DEVOPS": "https://docs.google.com/document/d/1AbuouxaQLJsn9IpMMrbBuj0Dps6aUJD4gYm9pOduZA4/edit?tab=t.0",
                     "vacancy_FRONTEND": "https://docs.google.com/document/d/1nCk58gHYmR3475_n_IEN9HcnspWxxGbAnD55JxG6uSw/edit?tab=t.0",
                     "vacancy_Архитектор": "https://docs.google.com/document/d/16qFb_OCqnEuy0xK0qpmMHZ-KKAbrhulKlFFxT7lSYiQ/edit?tab=t.0",
-                    "vacancy_PYTHON": "https://docs.google.com/document/d/1SK9gnwlB_znxQENpgO0FaPbeo9ryH1V5KaQktYN2jXc/edit?tab=t.0",
                     "vacancy_DEVOPS_GREENPLUM": "https://docs.google.com/document/d/1XC3no-zSn1yHJ5H5XKjSyXQ4qlhCYMJ2b2d_s16zwOk/edit?tab=t.0",
                     "vacancy_DEV_GREENPLUM": "https://docs.google.com/document/d/1v3MH3On2-nqsN2OHBeYyE1JEe4qcOK2CoFgL7c1gnGM/edit?tab=t.0"
                 }
@@ -57,14 +55,6 @@ def telegram_webhook():
                 template = (
                     "Позиция: SENIOR SDET\n"
                     "Команда: DATAHUB\n"
-                    "Соискатель: \n"
-                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
-                    "\nOutstaff_connect_bot"
-                )
-            elif data == "template_devops":
-                template = (
-                    "Позиция: SENIOR DEVOPS\n"
-                    "Команда: DATAMASTERS\n"
                     "Соискатель: \n"
                     "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
@@ -81,14 +71,6 @@ def telegram_webhook():
                 template = (
                     "Позиция: MIDDLE DATA ARCHITECT\n"
                     "Команда: DATAPLATFORM\n"
-                    "Соискатель: \n"
-                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
-                    "\nOutstaff_connect_bot"
-                )
-            elif data == "template_PYTHON":
-                template = (
-                    "Позиция: SENIOR DEV PYTHON\n"
-                    "Команда: DBAAS\n"
                     "Соискатель: \n"
                     "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
@@ -156,10 +138,8 @@ def telegram_webhook():
         if text == "/template@Outstaff_connect_bot":
             inline_keyboard = [
                 [{"text": "Тестировщик", "callback_data": "template_Тестировщик"}],
-                [{"text": "DEVOPS", "callback_data": "template_devops"}],
                 [{"text": "FRONTEND", "callback_data": "template_frontend"}],
                 [{"text": "Архитектор", "callback_data": "template_Архитектор"}],
-                [{"text": "PYTHON", "callback_data": "template_PYTHON"}],
                 [{"text": "DEVOPS_GREENPLUM", "callback_data": "template_DEVOPS_GREENPLUM"}],
                 [{"text": "DEV_GREENPLUM", "callback_data": "template_DEV_GREENPLUM"}]
             ]
@@ -170,10 +150,8 @@ def telegram_webhook():
         if text == "/vacancy@Outstaff_connect_bot":
             inline_keyboard = [
                 [{"text": "Тестировщик", "callback_data": "vacancy_Тестировщик"}],
-                [{"text": "DEVOPS", "callback_data": "vacancy_DEVOPS"}],
                 [{"text": "FRONTEND", "callback_data": "vacancy_FRONTEND"}],
                 [{"text": "Архитектор", "callback_data": "vacancy_Архитектор"}],
-                [{"text": "PYTHON", "callback_data": "vacancy_PYTHON"}],
                 [{"text": "DEVOPS_GREENPLUM", "callback_data": "vacancy_DEVOPS_GREENPLUM"}],
                 [{"text": "DEV_GREENPLUM", "callback_data": "vacancy_DEV_GREENPLUM"}]
             ]
