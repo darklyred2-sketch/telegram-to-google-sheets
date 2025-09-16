@@ -42,7 +42,8 @@ def telegram_webhook():
             if data.startswith("vacancy_"):
                 vacancy_map = {
                     "vacancy_DEVOPS_GREENPLUM": "https://docs.google.com/document/d/1XC3no-zSn1yHJ5H5XKjSyXQ4qlhCYMJ2b2d_s16zwOk/edit?tab=t.0",
-                    "vacancy_DEV_GREENPLUM": "https://docs.google.com/document/d/1v3MH3On2-nqsN2OHBeYyE1JEe4qcOK2CoFgL7c1gnGM/edit?tab=t.0"
+                    "vacancy_DEV_GREENPLUM": "https://docs.google.com/document/d/1v3MH3On2-nqsN2OHBeYyE1JEe4qcOK2CoFgL7c1gnGM/edit?tab=t.0",
+                    "vacancy_DEVOPS": "https://docs.google.com/document/d/1AbuouxaQLJsn9IpMMrbBuj0Dps6aUJD4gYm9pOduZA4/edit?usp=sharing"
                 }
                 url = vacancy_map.get(data, "Ссылка не найдена.")
                 send_telegram_message(chat_id, f"📄 Требования по вакансии: {url}")
@@ -60,6 +61,14 @@ def telegram_webhook():
                 template = (
                     "Позиция: DEV GREENPLUM\n"
                     "Команда: ARENADATADB\n"
+                    "Соискатель: \n"
+                    "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
+                    "\nOutstaff_connect_bot"
+                )
+            elif data == "template_DEVOPS":
+                template = (
+                    "Позиция: DEVOPS\n"
+                    "Команда: DATAMASTERS\n"
                     "Соискатель: \n"
                     "\n!Прикрепите резюме, напиши ФИО соискателя и поставь @ перед именем бота ниже!"
                     "\nOutstaff_connect_bot"
@@ -111,7 +120,8 @@ def telegram_webhook():
         if text == "/template@Outstaff_connect_bot":
             inline_keyboard = [
                 [{"text": "DEVOPS_GREENPLUM", "callback_data": "template_DEVOPS_GREENPLUM"}],
-                [{"text": "DEV_GREENPLUM", "callback_data": "template_DEV_GREENPLUM"}]
+                [{"text": "DEV_GREENPLUM", "callback_data": "template_DEV_GREENPLUM"}],
+                [{"text": "DEVOPS", "callback_data": "template_DEVOPS"}]
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
@@ -120,7 +130,8 @@ def telegram_webhook():
         if text == "/vacancy@Outstaff_connect_bot":
             inline_keyboard = [
                 [{"text": "DEVOPS_GREENPLUM", "callback_data": "vacancy_DEVOPS_GREENPLUM"}],
-                [{"text": "DEV_GREENPLUM", "callback_data": "vacancy_DEV_GREENPLUM"}]
+                [{"text": "DEV_GREENPLUM", "callback_data": "vacancy_DEV_GREENPLUM"}],
+                [{"text": "DEVOPS", "callback_data": "vacancy_DEVOPS"}]
             ]
             send_telegram_inline_keyboard(chat_id, "выберете вакансию, по которой хотите посмотреть требования", inline_keyboard)
             return jsonify({"status": "inline_vacancy_sent"}), 200
