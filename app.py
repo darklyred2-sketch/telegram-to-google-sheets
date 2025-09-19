@@ -133,7 +133,7 @@ def telegram_webhook():
                 [{"text": "DEVOPS_GREENPLUM", "callback_data": "template_DEVOPS_GREENPLUM"}],
                 [{"text": "DEV_GREENPLUM", "callback_data": "template_DEV_GREENPLUM"}],
                 [{"text": "DEVOPS DATASERVICES", "callback_data": "template_DEVOPS DATASERVICES"}],
-                [{"text": "DEVOPS INFRASTRUCTURE", "callback_data": "template_DEVOPS DATAMASTERS"}]
+                [{"text": "DEVOPS INFRASTRUCTURE", "callback_data": "template_DEVOPS INFRASTRUCTURE"}]
             ]
             send_telegram_inline_keyboard(chat_id, "Выберите шаблон:", inline_keyboard)
             return jsonify({"status": "inline_template_sent"}), 200
